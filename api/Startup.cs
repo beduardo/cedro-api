@@ -41,6 +41,10 @@ namespace api
                 cfg.AddProfile<mapeamentos.ConfiguracaoAutoMapper>();
             });
             services.AddSingleton<IMapper>(sp => automapper_configuration.CreateMapper());
+
+            //Serviços Persistência
+            services.AddScoped<IServicoPersistenciaRestaurante, ServicoPersistenciaRestaurante>();
+            services.AddScoped<IServicoPersistenciaPrato, ServicoPersistenciaPrato>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -15,6 +15,7 @@ namespace api.mapeamentos {
     public class ConfiguracaoAutoMapper : Profile {
         public ConfiguracaoAutoMapper() {
             RestauranteMapeamentoProfile.Mapear(this);
+            PratoMapeamentoProfile.Mapear(this);
         }
     }
 }

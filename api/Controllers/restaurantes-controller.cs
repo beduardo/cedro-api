@@ -1,8 +1,9 @@
 using System.Threading.Tasks;
-using api.data;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
-using Microsoft.EntityFrameworkCore;
+using System;
+using api.models;
+using api.servicos.persistencia;
 
 namespace api.controllers
 {
@@ -10,17 +11,50 @@ namespace api.controllers
     [ApiController]
     public class RestaurantesController : Controller
     {
-        private readonly ContextoBdAplicacao contexto;
-        public RestaurantesController(ContextoBdAplicacao contexto)
-        {
-            this.contexto = contexto;
+        private readonly IServicoPersistenciaRestaurante servico;
+        public RestaurantesController(IServicoPersistenciaRestaurante servico) {
+            this.servico = servico;
         }
 
         [HttpGet]
-        public async Task<IActionResult> buscartodos()
+        [ProducesResponseType(200)]
+        public IActionResult buscar(string filtro)
         {
-            var resultado = await contexto.Restaurantes.ToListAsync();
-            return Ok(resultado);
+            return Ok(new RestaurantePersistenciaModel[] {});
+        }
+
+        [Route("{id:guid}")]
+        [HttpGet]
+        [ProducesResponseType(200)]
+        public IActionResult buscarPorId(Guid id)
+        {
+            return Ok(new RestaurantePersistenciaModel());
+        }
+
+        [HttpPost]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(201)]
+        public IActionResult criar([FromBody] RestaurantePersistenciaModel request)
+        {
+            return CreatedAtAction(nameof(criar), new RestaurantePersistenciaModel());
+        }
+
+        [HttpPut]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(200)]
+        public IActionResult alterar([FromBody] RestaurantePersistenciaModel request)
+        {
+            return Ok(new RestaurantePersistenciaModel());
+        }
+
+        [Route("{id:guid}")]
+        [HttpDelete]
+        [ProducesResponseType(404)]
+        [ProducesResponseType(204)]
+        public IActionResult excluir(Guid Id)
+        {
+            return Ok();
         }
     }
 }
