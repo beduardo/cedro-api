@@ -20,10 +20,17 @@ namespace api.controllers
         [Route("{id:guid}")]
         [HttpGet]
         [ProducesResponseType(200)]
-        public IActionResult buscarPorId(Guid id)
+        public async Task<IActionResult> buscarPorId(Guid id)
         {
-            throw new NotImplementedException();
-            // return Ok(new PratoPersistenciaModel());
+            try
+            {
+                var res = await servico.BuscarPorId(id);
+                return Ok(res);
+            }
+            catch (EntidadeNaoExisteException)
+            {
+                return NotFound("Registro não encontrado");
+            }
         }
 
         [HttpPost]
@@ -67,10 +74,17 @@ namespace api.controllers
         [HttpDelete]
         [ProducesResponseType(404)]
         [ProducesResponseType(204)]
-        public IActionResult excluir(Guid Id)
+        public async Task<IActionResult> excluir(Guid Id)
         {
-            throw new NotImplementedException();
-            // return Ok();
+            try
+            {
+                await servico.Excluir(Id, true);
+                return NoContent();
+            }
+            catch (EntidadeNaoExisteException)
+            {
+                return NotFound("Registro não encontrado");
+            }
         }
     }
 }
