@@ -10,33 +10,13 @@ using System.Threading.Tasks;
 using AutoMapper;
 using api.mapeamentos;
 using api.models;
+using System.Collections.Generic;
 
 namespace test_api.servicos.persistencia
 {
 
     public class ServicoPersistenciaBaseTests
     {
-        private int intervaloDatas = 60000;
-        private IMapper BuscaMapper()
-        {
-            MapperConfiguration automapper_configuration = new MapperConfiguration(cfg =>
-            {
-                // cfg.AddProfile<ConfiguracaoAutoMapper>();
-                cfg.CreateMap<EntidadeParaTeste, PersistenciaModelParaTeste>();
-                cfg.CreateMap<PersistenciaModelParaTeste, EntidadeParaTeste>()
-                    .IgnorePadraoEntidade();
-
-            });
-            return automapper_configuration.CreateMapper();
-        }
-
-        private DbContextOptions<ContextoParaTeste> OptionsContext()
-        {
-            return new DbContextOptionsBuilder<ContextoParaTeste>()
-                            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-                            .Options;
-        }
-
         [Fact]
         public void CriacaoServico_OK()
         {
@@ -67,7 +47,7 @@ namespace test_api.servicos.persistencia
             using (var contextoVerificacao = new ContextoParaTeste(options))
             {
                 //Verificar
-                var entidades = contextoVerificacao.Entidades.ToList();
+                var entidades = await contextoVerificacao.Entidades.ToListAsync();
                 entidades.Should().HaveCount(1);
 
                 var entidade = entidades.FirstOrDefault();
@@ -375,34 +355,268 @@ namespace test_api.servicos.persistencia
         }
 
         [Fact]
-        public void BuscarPorId_OK() {
-            throw new NotImplementedException();
+        public async Task BuscarPorId_OK()
+        {
+            var options = OptionsContext();
+
+            var id = Guid.NewGuid();
+            using (var contexto = new ContextoParaTeste(options))
+            {
+                //Preparar
+                var servicoEmTeste = new ServicoEmTeste(contexto, BuscaMapper());
+
+                var entidadeExistente = new EntidadeParaTeste
+                {
+                    Id = id,
+                    DataAlteracao = DateTimeOffset.Now,
+                    DataCriacao = DateTimeOffset.Now,
+                    Excluido = false,
+                    PropriedadeTeste = "valor-atual"
+                };
+                await contexto.AddAsync(entidadeExistente);
+                await contexto.SaveChangesAsync();
+
+                //Executar
+                var resultado = await servicoEmTeste.BuscarPorId(id);
+
+                //Verifica
+                resultado.Should().BeEquivalentTo(new PersistenciaModelParaTeste
+                {
+                    Id = id,
+                    PropriedadeTeste = "valor-atual"
+                });
+            }
         }
 
         [Fact]
-        public void BuscarPorId_EntidadeNaoExiste_GeraException() {
-            throw new NotImplementedException();
+        public void BuscarPorId_EntidadeNaoExiste_GeraException()
+        {
+            var options = OptionsContext();
+
+            var id = Guid.NewGuid();
+            using (var contexto = new ContextoParaTeste(options))
+            {
+                //Preparar
+                var servicoEmTeste = new ServicoEmTeste(contexto, BuscaMapper());
+
+                //Executar
+                Func<Task> act = async () => { await servicoEmTeste.BuscarPorId(id); };
+                act.Should().Throw<EntidadeNaoExisteException>()
+                    .WithMessage("Entidade não encontrada");
+            }
         }
 
         [Fact]
-        public void Buscar_OK() {
-            //Retorna todos
-            throw new NotImplementedException();
+        public async Task Buscar_OK()
+        {
+            var options = OptionsContext();
+
+            var ids = new[] {
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+            };
+
+            using (var contexto = new ContextoParaTeste(options))
+            {
+                //Preparar
+                var servicoEmTeste = new ServicoEmTeste(contexto, BuscaMapper());
+
+                var entidadesExistentes = new[] {
+                    new EntidadeParaTeste {
+                        Id = ids[0],
+                        DataAlteracao = DateTimeOffset.Now,
+                        DataCriacao = DateTimeOffset.Now,
+                        Excluido = false,
+                        PropriedadeTeste = "valor-atual-1"
+                    },
+                    new EntidadeParaTeste {
+                        Id = ids[1],
+                        DataAlteracao = DateTimeOffset.Now,
+                        DataCriacao = DateTimeOffset.Now,
+                        Excluido = false,
+                        PropriedadeTeste = "valor-atual-2"
+                    },
+                    new EntidadeParaTeste {
+                        Id = ids[2],
+                        DataAlteracao = DateTimeOffset.Now,
+                        DataCriacao = DateTimeOffset.Now,
+                        Excluido = false,
+                        PropriedadeTeste = "valor-atual-3"
+                    },
+                };
+                await contexto.AddRangeAsync(entidadesExistentes);
+                await contexto.SaveChangesAsync();
+
+                //Executar
+                var resultado = await servicoEmTeste.Buscar();
+
+                //Verifica
+                resultado.Should().BeEquivalentTo(new[] {
+                    new PersistenciaModelParaTeste
+                    {
+                        Id = ids[0],
+                        PropriedadeTeste = "valor-atual-1"
+                    },
+                    new PersistenciaModelParaTeste
+                    {
+                        Id = ids[1],
+                        PropriedadeTeste = "valor-atual-2"
+                    },
+                    new PersistenciaModelParaTeste
+                    {
+                        Id = ids[2],
+                        PropriedadeTeste = "valor-atual-3"
+                    },
+                });
+            }
         }
 
         [Fact]
-        public void Buscar_ComFiltro_OK() {
+        public async Task Buscar_ComFiltro_OK()
+        {
             //Retorna somente os filtrados
-            throw new NotImplementedException();
+            var options = OptionsContext();
+
+            var ids = new[] {
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+            };
+
+            using (var contexto = new ContextoParaTeste(options))
+            {
+                //Preparar
+                var servicoEmTeste = new ServicoEmTeste(contexto, BuscaMapper());
+
+                var entidadesExistentes = new[] {
+                    new EntidadeParaTeste {
+                        Id = ids[0],
+                        DataAlteracao = DateTimeOffset.Now,
+                        DataCriacao = DateTimeOffset.Now,
+                        Excluido = false,
+                        PropriedadeTeste = "valor-atual-1"
+                    },
+                    new EntidadeParaTeste {
+                        Id = ids[1],
+                        DataAlteracao = DateTimeOffset.Now,
+                        DataCriacao = DateTimeOffset.Now,
+                        Excluido = false,
+                        PropriedadeTeste = "valor-atual-2"
+                    },
+                    new EntidadeParaTeste {
+                        Id = ids[2],
+                        DataAlteracao = DateTimeOffset.Now,
+                        DataCriacao = DateTimeOffset.Now,
+                        Excluido = false,
+                        PropriedadeTeste = "valor-atual-3"
+                    },
+                };
+                await contexto.AddRangeAsync(entidadesExistentes);
+                await contexto.SaveChangesAsync();
+
+                //Executar
+                var resultado = await servicoEmTeste.Buscar("valor-atual-2");
+
+                //Verifica
+                resultado.Should().BeEquivalentTo(new[] {
+                    new PersistenciaModelParaTeste
+                    {
+                        Id = ids[1],
+                        PropriedadeTeste = "valor-atual-2"
+                    },
+                });
+            }
         }
 
         [Fact]
-        public void Buscar_OrdenadosCorretamente_OK() {
-            //Retorna somente os filtrados
-            throw new NotImplementedException();
+        public async Task Buscar_OrdenadosCorretamente_OK()
+        {
+            //Retorna ordenados
+            var options = OptionsContext();
+
+            var ids = new[] {
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+                Guid.NewGuid(),
+            };
+
+            using (var contexto = new ContextoParaTeste(options))
+            {
+                //Preparar
+                var servicoEmTeste = new ServicoEmTeste(contexto, BuscaMapper());
+
+                var entidadesExistentes = new[] {
+                    new EntidadeParaTeste {
+                        Id = ids[1],
+                        DataAlteracao = DateTimeOffset.Now,
+                        DataCriacao = DateTimeOffset.Now,
+                        Excluido = false,
+                        PropriedadeTeste = "valor-atual-2"
+                    },
+                    new EntidadeParaTeste {
+                        Id = ids[0],
+                        DataAlteracao = DateTimeOffset.Now,
+                        DataCriacao = DateTimeOffset.Now,
+                        Excluido = false,
+                        PropriedadeTeste = "valor-atual-1"
+                    },
+                    new EntidadeParaTeste {
+                        Id = ids[2],
+                        DataAlteracao = DateTimeOffset.Now,
+                        DataCriacao = DateTimeOffset.Now,
+                        Excluido = false,
+                        PropriedadeTeste = "valor-atual-3"
+                    },
+                };
+                await contexto.AddRangeAsync(entidadesExistentes);
+                await contexto.SaveChangesAsync();
+
+                //Executar
+                var resultado = await servicoEmTeste.Buscar();
+
+                //Verifica
+                resultado.Should().BeEquivalentTo(new[] {
+                    new PersistenciaModelParaTeste
+                    {
+                        Id = ids[0],
+                        PropriedadeTeste = "valor-atual-1"
+                    },
+                    new PersistenciaModelParaTeste
+                    {
+                        Id = ids[1],
+                        PropriedadeTeste = "valor-atual-2"
+                    },
+                    new PersistenciaModelParaTeste
+                    {
+                        Id = ids[2],
+                        PropriedadeTeste = "valor-atual-3"
+                    },
+                }, opt => opt.WithStrictOrdering());
+            }
         }
 
         //Auxiliares Teste
+        private int intervaloDatas = 60000;
+        private IMapper BuscaMapper()
+        {
+            MapperConfiguration automapper_configuration = new MapperConfiguration(cfg =>
+            {
+                cfg.CreateMap<EntidadeParaTeste, PersistenciaModelParaTeste>();
+                cfg.CreateMap<PersistenciaModelParaTeste, EntidadeParaTeste>()
+                    .IgnorePadraoEntidade();
+
+            });
+            return automapper_configuration.CreateMapper();
+        }
+
+        private DbContextOptions<ContextoParaTeste> OptionsContext()
+        {
+            return new DbContextOptionsBuilder<ContextoParaTeste>()
+                            .UseInMemoryDatabase(Guid.NewGuid().ToString())
+                            .Options;
+        }
+
         private class EntidadeParaTeste : EntidadeBase
         {
             public string PropriedadeTeste { get; set; }
@@ -444,6 +658,22 @@ namespace test_api.servicos.persistencia
                         new ErroValidacaoPropriedade("PropriedadeTeste", new[] { "propriedade obrigatória"})
                     });
                 }
+            }
+
+            public async Task<IEnumerable<PersistenciaModelParaTeste>> Buscar(string filtro = null)
+            {
+                return await EfetuaBusca((set) =>
+                {
+                    var ordenado = set.OrderBy(e => e.PropriedadeTeste);
+                    if (string.IsNullOrWhiteSpace(filtro))
+                    {
+                        return ordenado;
+                    }
+                    else
+                    {
+                        return ordenado.Where(e => e.PropriedadeTeste == filtro);
+                    }
+                });
             }
         }
 

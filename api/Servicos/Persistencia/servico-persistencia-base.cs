@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Threading.Tasks;
 using AutoMapper;
 using api.models;
+using System.Linq;
 
 namespace api.servicos.persistencia
 {
@@ -16,8 +17,7 @@ namespace api.servicos.persistencia
         Task Criar(TPersistenciaModel novaentidade, bool persistir = false);
         Task Alterar(TPersistenciaModel entidadealterada, bool persistir = false);
         Task Excluir(Guid id, bool persistir = false);
-        TPersistenciaModel BuscarPorId(Guid id);
-        IEnumerable<TPersistenciaModel> Buscar();
+        Task<TPersistenciaModel> BuscarPorId(Guid id);
     }
 
     public abstract class ServicoPersistenciaBase<TEntidade, TPersistenciaModel> : IServicoPersistenciaBase<TEntidade, TPersistenciaModel>
@@ -98,14 +98,24 @@ namespace api.servicos.persistencia
             }
         }
 
-        public TPersistenciaModel BuscarPorId(Guid id)
+        public async Task<TPersistenciaModel> BuscarPorId(Guid id)
         {
-            throw new NotImplementedException();
+            var entidadeExistente = await entidade_set.FirstOrDefaultAsync(e => e.Id == id);
+
+            if (entidadeExistente == null) {
+                throw new EntidadeNaoExisteException();
+            }
+
+            var resultado = mapeador.Map<TPersistenciaModel>(entidadeExistente);
+            return resultado;
         }
 
-        public IEnumerable<TPersistenciaModel> Buscar()
+        protected async Task<IEnumerable<TPersistenciaModel>> EfetuaBusca(Func<DbSet<TEntidade>, IQueryable<TEntidade>> manipulacao_set)
         {
-            throw new NotImplementedException();
+            var setManipulado = manipulacao_set(entidade_set);
+            var entidadesExistentes = await setManipulado.ToListAsync();
+            var resultado = mapeador.Map<IEnumerable<TPersistenciaModel>>(entidadesExistentes);
+            return resultado;
         }
 
     }
