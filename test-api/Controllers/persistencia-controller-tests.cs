@@ -4,7 +4,6 @@ using api.servicos.persistencia;
 using api.models;
 using api.controllers;
 using FluentAssertions;
-using FluentAssertions.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;

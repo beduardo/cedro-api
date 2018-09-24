@@ -6,7 +6,6 @@ using api.models;
 using Moq;
 using Xunit;
 using FluentAssertions;
-using FluentAssertions.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc;
 
 namespace test_api.controllers
