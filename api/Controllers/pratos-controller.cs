@@ -7,54 +7,21 @@ using api.servicos.persistencia;
 
 namespace api.controllers
 {
-    [Route("api/restaurantes")]
+    [Route("api/pratos")]
     [ApiController]
-    public class PratosController : Controller
+    public class PratosController : PersistenciaController<PratoPersistenciaModel>
     {
         private readonly IServicoPersistenciaPrato servico;
-        public PratosController(IServicoPersistenciaPrato servico) {
+        public PratosController(IServicoPersistenciaPrato servico) : base(servico) {
             this.servico = servico;
         }
 
         [HttpGet]
         [ProducesResponseType(200)]
-        public IActionResult buscar(string filtro)
+        public async Task<IActionResult> buscar()
         {
-            return Ok(new PratoPersistenciaModel[] {});
-        }
-
-        [Route("{id:guid}")]
-        [HttpGet]
-        [ProducesResponseType(200)]
-        public IActionResult buscarPorId(Guid id)
-        {
-            return Ok(new PratoPersistenciaModel());
-        }
-
-        [HttpPost]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(201)]
-        public IActionResult criar([FromBody] PratoPersistenciaModel request)
-        {
-            return CreatedAtAction(nameof(criar), new PratoPersistenciaModel());
-        }
-
-        [HttpPut]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        [ProducesResponseType(200)]
-        public IActionResult alterar([FromBody] PratoPersistenciaModel request)
-        {
-            return Ok(new PratoPersistenciaModel());
-        }
-
-        [Route("{id:guid}")]
-        [HttpDelete]
-        [ProducesResponseType(404)]
-        [ProducesResponseType(204)]
-        public IActionResult excluir(Guid Id)
-        {
-            return Ok();
+            var res = await servico.Buscar();
+            return Ok(res);
         }
     }
 }

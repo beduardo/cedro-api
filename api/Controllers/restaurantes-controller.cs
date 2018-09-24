@@ -9,52 +9,20 @@ namespace api.controllers
 {
     [Route("api/restaurantes")]
     [ApiController]
-    public class RestaurantesController : Controller
+    public class RestaurantesController : PersistenciaController<RestaurantePersistenciaModel>
     {
         private readonly IServicoPersistenciaRestaurante servico;
-        public RestaurantesController(IServicoPersistenciaRestaurante servico) {
+        public RestaurantesController(IServicoPersistenciaRestaurante servico) : base(servico)
+        {
             this.servico = servico;
         }
 
         [HttpGet]
         [ProducesResponseType(200)]
-        public IActionResult buscar(string filtro)
+        public async Task<IActionResult> buscar(string filtro)
         {
-            return Ok(new RestaurantePersistenciaModel[] {});
-        }
-
-        [Route("{id:guid}")]
-        [HttpGet]
-        [ProducesResponseType(200)]
-        public IActionResult buscarPorId(Guid id)
-        {
-            return Ok(new RestaurantePersistenciaModel());
-        }
-
-        [HttpPost]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(201)]
-        public IActionResult criar([FromBody] RestaurantePersistenciaModel request)
-        {
-            return CreatedAtAction(nameof(criar), new RestaurantePersistenciaModel());
-        }
-
-        [HttpPut]
-        [ProducesResponseType(400)]
-        [ProducesResponseType(404)]
-        [ProducesResponseType(200)]
-        public IActionResult alterar([FromBody] RestaurantePersistenciaModel request)
-        {
-            return Ok(new RestaurantePersistenciaModel());
-        }
-
-        [Route("{id:guid}")]
-        [HttpDelete]
-        [ProducesResponseType(404)]
-        [ProducesResponseType(204)]
-        public IActionResult excluir(Guid Id)
-        {
-            return Ok();
+            var res = await servico.Buscar(filtro);
+            return Ok(res);
         }
     }
 }
