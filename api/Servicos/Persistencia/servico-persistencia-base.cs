@@ -10,17 +10,16 @@ using System.Linq;
 
 namespace api.servicos.persistencia
 {
-    public interface IServicoPersistenciaBase<TEntidade, TPersistenciaModel>
-    where TEntidade : EntidadeBase
+    public interface IServicoPersistenciaBase<TPersistenciaModel>
     where TPersistenciaModel : PersistenciaModelBase
     {
-        Task Criar(TPersistenciaModel novaentidade, bool persistir = false);
-        Task Alterar(TPersistenciaModel entidadealterada, bool persistir = false);
+        Task<TPersistenciaModel> Criar(TPersistenciaModel novaentidade, bool persistir = false);
+        Task<TPersistenciaModel> Alterar(TPersistenciaModel entidadealterada, bool persistir = false);
         Task Excluir(Guid id, bool persistir = false);
         Task<TPersistenciaModel> BuscarPorId(Guid id);
     }
 
-    public abstract class ServicoPersistenciaBase<TEntidade, TPersistenciaModel> : IServicoPersistenciaBase<TEntidade, TPersistenciaModel>
+    public abstract class ServicoPersistenciaBase<TEntidade, TPersistenciaModel> : IServicoPersistenciaBase<TPersistenciaModel>
     where TEntidade : EntidadeBase
     where TPersistenciaModel : PersistenciaModelBase
     {
@@ -35,9 +34,8 @@ namespace api.servicos.persistencia
             this.mapeador = mapeador;
         }
 
-        public async Task Criar(TPersistenciaModel novomodel, bool persistir = true)
+        public async Task<TPersistenciaModel> Criar(TPersistenciaModel novomodel, bool persistir = true)
         {
-
             ValidarCriacao(novomodel);
 
             var novaentidade = mapeador.Map<TPersistenciaModel, TEntidade>(novomodel);
@@ -53,11 +51,14 @@ namespace api.servicos.persistencia
             {
                 await contexto.SaveChangesAsync();
             }
+
+            var entidaderetorno = mapeador.Map<TEntidade, TPersistenciaModel>(novaentidade);
+            return entidaderetorno;
         }
 
         public abstract void ValidarCriacao(TPersistenciaModel novomodel);
 
-        public async Task Alterar(TPersistenciaModel modelalterado, bool persistir = true)
+        public async Task<TPersistenciaModel> Alterar(TPersistenciaModel modelalterado, bool persistir = true)
         {
             ValidarAlteracao(modelalterado);
 
@@ -76,6 +77,9 @@ namespace api.servicos.persistencia
             {
                 await contexto.SaveChangesAsync();
             }
+
+            var entidaderetorno = mapeador.Map<TEntidade, TPersistenciaModel>(entidadeExistente);
+            return entidaderetorno;
         }
 
         public abstract void ValidarAlteracao(TPersistenciaModel novomodel);

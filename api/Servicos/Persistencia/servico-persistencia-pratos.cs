@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace api.servicos.persistencia
 {
-    public interface IServicoPersistenciaPrato : IServicoPersistenciaBase<Prato, PratoPersistenciaModel>
+    public interface IServicoPersistenciaPrato : IServicoPersistenciaBase<PratoPersistenciaModel>
     {
 
         Task<IEnumerable<PratoPersistenciaModel>> Buscar();

@@ -41,7 +41,10 @@ namespace test_api.servicos.persistencia
                 {
                     PropriedadeTeste = "novo-valor"
                 };
-                await servicoEmTeste.Criar(novomodel);
+                var res = await servicoEmTeste.Criar(novomodel);
+                res.Should().NotBeNull();
+                res.Id.Should().NotBeEmpty();
+                res.PropriedadeTeste.Should().Be("novo-valor");
             }
 
             using (var contextoVerificacao = new ContextoParaTeste(options))
@@ -135,7 +138,11 @@ namespace test_api.servicos.persistencia
                     Id = id,
                     PropriedadeTeste = "valor-alterado"
                 };
-                await servicoEmTeste.Alterar(modelalterado);
+                var res = await servicoEmTeste.Alterar(modelalterado);
+
+                res.Should().NotBeNull();
+                res.Id.Should().Be(id);
+                res.PropriedadeTeste.Should().Be("valor-alterado");
             }
 
             using (var contextoVerificacao = new ContextoParaTeste(options))

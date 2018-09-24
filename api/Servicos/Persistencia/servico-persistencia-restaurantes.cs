@@ -9,7 +9,7 @@ using System.Linq;
 
 namespace api.servicos.persistencia
 {
-    public interface IServicoPersistenciaRestaurante : IServicoPersistenciaBase<Restaurante, RestaurantePersistenciaModel>
+    public interface IServicoPersistenciaRestaurante : IServicoPersistenciaBase<RestaurantePersistenciaModel>
     {
         Task<IEnumerable<RestaurantePersistenciaModel>> Buscar(string filtro);
     }
