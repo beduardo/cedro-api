@@ -74,7 +74,7 @@ namespace api.controllers
         [HttpDelete]
         [ProducesResponseType(404)]
         [ProducesResponseType(204)]
-        public async Task<IActionResult> excluir(Guid Id)
+        public virtual async Task<IActionResult> excluir(Guid Id)
         {
             try
             {

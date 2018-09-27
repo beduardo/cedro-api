@@ -23,8 +23,8 @@ namespace api.servicos.persistencia
     where TEntidade : EntidadeBase
     where TPersistenciaModel : PersistenciaModelBase
     {
-        private readonly DbContext contexto;
-        private readonly DbSet<TEntidade> entidade_set;
+        protected readonly DbContext contexto;
+        protected readonly DbSet<TEntidade> entidade_set;
         private readonly IMapper mapeador;
 
         public ServicoPersistenciaBase(DbContext contexto, IMapper mapeador)
@@ -84,7 +84,7 @@ namespace api.servicos.persistencia
 
         public abstract void ValidarAlteracao(TPersistenciaModel novomodel);
 
-        public async Task Excluir(Guid id, bool persistir = true)
+        public virtual async Task Excluir(Guid id, bool persistir = true)
         {
             //Busca a entidade atual
             var entidadeExistente = await entidade_set.FirstOrDefaultAsync(e => e.Id == id);

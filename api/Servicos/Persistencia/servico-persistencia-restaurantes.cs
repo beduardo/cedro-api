@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace api.servicos.persistencia
 {
@@ -72,6 +73,31 @@ namespace api.servicos.persistencia
                 throw new ValidacaoPersistenciaException(new[] {
                         new ErroValidacaoPropriedade("Nome", new[] { "nome pode ter no máximo 100 caracteres"})
                     });
+            }
+        }
+
+        public override async Task Excluir(Guid id, bool persistir = true)
+        {
+            //Busca a entidade atual
+            var restauranteExistente = await entidade_set
+            .Include(e => e.Pratos)
+            .FirstOrDefaultAsync(e => e.Id == id);
+
+            if (restauranteExistente == null) {
+                throw new EntidadeNaoExisteException();
+            }
+
+            foreach(var prato in restauranteExistente.Pratos) {
+                prato.DataAlteracao = DateTimeOffset.Now;
+                prato.Excluido = true;
+            }
+            
+            restauranteExistente.DataAlteracao = DateTimeOffset.Now;
+            restauranteExistente.Excluido = true;
+
+            if (persistir)
+            {
+                await contexto.SaveChangesAsync();
             }
         }
     }

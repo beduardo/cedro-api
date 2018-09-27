@@ -12,9 +12,14 @@ namespace api.controllers
     public class RestaurantesController : PersistenciaController<RestaurantePersistenciaModel>
     {
         private readonly IServicoPersistenciaRestaurante servico;
-        public RestaurantesController(IServicoPersistenciaRestaurante servico) : base(servico)
+        private readonly IServicoPersistenciaPrato servicoPrato;
+        public RestaurantesController(
+            IServicoPersistenciaRestaurante servico,
+            IServicoPersistenciaPrato servicoPrato
+            ) : base(servico)
         {
             this.servico = servico;
+            this.servicoPrato = servicoPrato;
         }
 
         [HttpGet]
