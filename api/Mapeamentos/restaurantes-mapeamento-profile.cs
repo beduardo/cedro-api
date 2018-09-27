@@ -7,6 +7,7 @@ namespace api.mapeamentos {
         public static void Mapear(Profile perfil) {
             perfil.CreateMap<Restaurante, RestaurantePersistenciaModel>();
             perfil.CreateMap<RestaurantePersistenciaModel, Restaurante>()
+                .ForMember(d => d.Pratos, opt => opt.Ignore())
                 .IgnorePadraoEntidade();
 
         }

@@ -18,7 +18,8 @@ namespace test_api.controllers
         {
             //Prepara
             var servicoMock = new Mock<IServicoPersistenciaRestaurante>();
-            var controllerEmTeste = new RestaurantesController(servicoMock.Object);
+            var servicoPratosMock = new Mock<IServicoPersistenciaPrato>();
+            var controllerEmTeste = new RestaurantesController(servicoMock.Object, servicoPratosMock.Object);
         }
 
         [Fact]
@@ -56,12 +57,13 @@ namespace test_api.controllers
             };
 
             var servicoMock = new Mock<IServicoPersistenciaRestaurante>();
+            var servicoPratosMock = new Mock<IServicoPersistenciaPrato>();
 
             servicoMock
             .Setup(s => s.Buscar(It.IsAny<string>()))
             .ReturnsAsync(response);
 
-            var controllerEmTeste = new RestaurantesController(servicoMock.Object);
+            var controllerEmTeste = new RestaurantesController(servicoMock.Object, servicoPratosMock.Object);
 
             //Executa
             var resp = await controllerEmTeste.buscar(null);
@@ -99,12 +101,13 @@ namespace test_api.controllers
             };
 
             var servicoMock = new Mock<IServicoPersistenciaRestaurante>();
-
+            var servicoPratosMock = new Mock<IServicoPersistenciaPrato>();
+            
             servicoMock
             .Setup(s => s.Buscar(It.IsAny<string>()))
             .ReturnsAsync(response);
 
-            var controllerEmTeste = new RestaurantesController(servicoMock.Object);
+            var controllerEmTeste = new RestaurantesController(servicoMock.Object, servicoPratosMock.Object);
 
             //Executa
             var resp = await controllerEmTeste.buscar("teste");
